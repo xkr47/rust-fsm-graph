@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 proc-macro2 = "1.0"
+itertools = "0.9"
 
 [dependencies.syn]
 version = "1.0"

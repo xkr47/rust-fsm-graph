@@ -7,6 +7,7 @@ use proc_macro2::TokenStream;
 use syn::{Item, parse2};
 
 use crate::parser::StateMachineDef;
+use itertools::Itertools;
 
 mod parser;
 
@@ -61,16 +62,32 @@ fn fsm_to_graphviz(stream: TokenStream) -> (String, String) {
 "#, fsm.initial_state.to_string());
 
     fsm.transitions.into_iter()
-        .flat_map(|from| {
+        .for_each(|from| {
             let from_state = from.initial_state.to_string();
             from.transitions.into_iter()
-                .map(move |to| format!("  \"{}\" -> \"{}\" [label=\"{}{}\" minlen=2];\n",
-                                       from_state,
-                                       to.final_state.to_string(),
-                                       to.input_value.to_string(),
-                                       to.output.map_or(String::new(), |v| format!(" [{}]", v.to_string()))))
-        })
-        .for_each(|line| dot.push_str(&line));
+                .map(|to| {
+                    (
+                        (
+                            if let Some(i) = &to.output { Some(i.to_string()) } else { None },
+                            to.final_state.to_string()
+                        ),
+                        to.input_value.to_string()
+                    )
+                })
+                .into_group_map()
+                .into_iter()
+                .map(move |((output, final_state), input_values)|
+                    {
+                        let is_multiple_to = input_values.len() > 1;
+                        format!("  \"{}\" -> \"{}\" [label=\"{}{}\" minlen=2];\n",
+                                from_state,
+                                final_state,
+                                input_values.into_iter().join(",\n"),
+                                output.map_or(String::new(), |v|
+                                    format!("{}[{}]", if is_multiple_to { "\n" } else { " " }, v)))
+                    })
+                .for_each(|line| dot.push_str(&line));
+        });
 
     dot.push_str("}\n");
 
