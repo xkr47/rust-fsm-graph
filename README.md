@@ -22,6 +22,13 @@ digraph "graph" {
   "HalfOpen" -> "Open" [label="Unsuccessful [SetupTimer]" minlen=2];
 }
 ```
-.. which using the `dot -Tpng CircuitBreaker.dot > CircuitBreaker.png` command from the graphviz package generates the following image:
+
+Then run the `dot` command from the graphviz package:
+
+```sh
+$ dot -Tpng CircuitBreaker.dot > CircuitBreaker.png
+```
+
+.. which generates the following image:
 
 ![CircuitBreaker](https://user-images.githubusercontent.com/1488474/100496884-77b67600-3160-11eb-950f-f74533b02b3c.png)
