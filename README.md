@@ -10,7 +10,7 @@ $ cargo run example.rs
 Wrote CircuitBreaker.dot
 ```
 
-This produces a [graphviz](https://graphviz.org/) .dot file which can be rendered to images in a plethora of formats - png, svg, ps, pdf etc. In this example, it produces a `CircuitBreaker.dot` file
+This produces a [graphviz](https://graphviz.org/) .dot file which can be rendered to images in a plethora of formats - png, svg, ps, pdf etc. In this example, it produces a `CircuitBreaker.dot` file:
 ```dot
 digraph "graph" {
   rankdir="LR";
