@@ -55,6 +55,7 @@ fn fsm_to_graphviz(stream: TokenStream) -> (String, String) {
 
     let mut dot = format!(r#"digraph "graph" {{
   rankdir="LR";
+  node [shape=Mrecord];
   SM_init [label="", shape=point];
   SM_init -> "{}";
 "#, fsm.initial_state.to_string());
