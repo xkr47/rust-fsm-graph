@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 itertools = "0.9"
+linked_hash_set = "0.1"
 
 [dependencies.syn]
 version = "1.0"

@@ -3,6 +3,7 @@ use std::fs::read_to_string;
 use std::process;
 
 use itertools::Itertools;
+use linked_hash_set::LinkedHashSet;
 use syn::{Item, parse2};
 
 use crate::parser::StateMachineDef;
@@ -57,10 +58,13 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
     let mut dot = format!(r#"digraph "graph" {{
   rankdir="LR";
   node [shape=Mrecord];
+  newrank=true;
   SM_init [label="", shape=point];
   SM_init -> "{}";
 "#, fsm.initial_state.to_string());
 
+
+    let mut dot2 = LinkedHashSet::new();
     fsm.transitions.into_iter()
         .for_each(|from| {
             let from_state = from.initial_state.to_string();
@@ -76,18 +80,33 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
                 })
                 .into_group_map()
                 .into_iter()
-                .map(move |((output, final_state), input_values)|
-                    {
-                        let is_multiple_to = input_values.len() > 1;
-                        format!("  \"{}\" -> \"{}\" [label=\"{}{}\" minlen=2];\n",
-                                from_state,
-                                final_state,
-                                input_values.into_iter().join(",\n"),
-                                output.map_or(String::new(), |v|
-                                    format!("{}[{}]", if is_multiple_to { "\n" } else { " " }, v)))
-                    })
-                .for_each(|line| dot.push_str(&line));
+                .for_each(|((output, final_state), input_values)| {
+                    if let Some(o) = output {
+                        let output_node = format!("{}_{}", o, final_state);
+
+                        dot2.insert(format!("  \"{}\" -> \"{}\" [label=\"{}\"  arrowhead=none arrowtail=normal dir=both ];\n",
+                                            output_node,
+                                            from_state,
+                                            input_values.into_iter().join(",\n")));
+
+                        dot2.insert(format!("  \"{}\" [label=\"{}\" color=red shape=note ];\n",
+                                            output_node,
+                                            o));
+                        dot2.insert(format!("  \"{}\" -> \"{}\" [ color=red arrowhead=none arrowtail=normal dir=both ];\n",
+                                            final_state,
+                                            output_node,
+                        ));
+                    } else {
+                        dot2.insert(format!("  \"{}\" -> \"{}\" [label=\"{}\" ];\n",
+                                            from_state,
+                                            final_state,
+                                            input_values.into_iter().join(",\n")));
+
+                    }
+                });
         });
+
+    dot2.iter().for_each(|line| dot.push_str(&line));
 
     dot.push_str("}\n");
 

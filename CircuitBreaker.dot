@@ -1,0 +1,13 @@
+digraph "graph" {
+  rankdir="LR";
+  node [shape=Mrecord];
+  newrank=true;
+  SM_init [label="", shape=point];
+  SM_init -> "Closed";
+  "SetupTimer_Open" -> "Closed" [label="Unsuccessful"  arrowhead=none arrowtail=normal dir=both ];
+  "Open" -> "HalfOpen" [label="TimerTriggered" ];
+  "HalfOpen" -> "Closed" [label="Successful" ];
+  "SetupTimer_Open" -> "HalfOpen" [label="Unsuccessful"  arrowhead=none arrowtail=normal dir=both ];
+  "SetupTimer_Open" [label="SetupTimer" color=red shape=note ];
+  "Open" -> "SetupTimer_Open" [ color=red arrowhead=none arrowtail=normal dir=both ];
+}
