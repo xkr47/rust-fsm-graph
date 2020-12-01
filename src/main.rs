@@ -1,13 +1,11 @@
 use std::env;
-use std::fs::File;
-use std::io::Read;
+use std::fs::read_to_string;
 use std::process;
 
-use proc_macro2::TokenStream;
+use itertools::Itertools;
 use syn::{Item, parse2};
 
 use crate::parser::StateMachineDef;
-use itertools::Itertools;
 
 mod parser;
 
@@ -23,25 +21,8 @@ fn main() {
         }
     };
 
-    let mut file = File::open(&filename).expect("Unable to open file");
-
-    let mut src = String::new();
-    file.read_to_string(&mut src).expect("Unable to read file");
-
-    let syntax = syn::parse_file(&src).expect("Unable to parse file");
-
-    syntax.items.into_iter()
-        .filter_map(|item|
-                    if let Item::Macro(item_macro) = item {
-                        let seg = &item_macro.mac.path.segments;
-                        if seg.len() == 1 && seg.first().unwrap().ident == "state_machine" {
-                            Some(item_macro.mac.tokens)
-                        } else {
-                            None
-                        }
-                    } else {
-                        None
-                    })
+    read_fsms(&filename)
+        .into_iter()
         .map(fsm_to_graphviz)
         .for_each(|(name, str)| {
             let filename = format!("{}.dot", name);
@@ -50,8 +31,27 @@ fn main() {
         });
 }
 
-fn fsm_to_graphviz(stream: TokenStream) -> (String, String) {
-    let fsm = parse2::<StateMachineDef>(stream).expect("Failed to parse state machine definition");
+
+fn read_fsms(file: &str) -> Vec<StateMachineDef> {
+    syn::parse_file(&read_to_string(file).expect("failed to read file"))
+        .expect("Unable to parse file")
+        .items.into_iter()
+        .filter_map(|item|
+            if let Item::Macro(item_macro) = item {
+                let seg = &item_macro.mac.path.segments;
+                if seg.len() == 1 && seg.first().unwrap().ident == "state_machine" {
+                    Some(item_macro.mac.tokens)
+                } else {
+                    None
+                }
+            } else {
+                None
+            })
+        .map(|ts| parse2::<StateMachineDef>(ts).expect("Failed to parse state machine definition"))
+        .collect()
+}
+
+fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
     let name = fsm.name.to_string();
 
     let mut dot = format!(r#"digraph "graph" {{
