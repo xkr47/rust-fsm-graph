@@ -20,7 +20,7 @@ $ dot -Tpng CircuitBreaker.dot > CircuitBreaker.png
 
 .. which generates the following image:
 
-![CircuitBreaker.png]
+![statemachine diagram](CircuitBreaker.png)
 
 # Ideas
 
