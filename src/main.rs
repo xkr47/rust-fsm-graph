@@ -7,6 +7,8 @@ use linked_hash_set::LinkedHashSet;
 use syn::{Item, parse2};
 
 use crate::parser::StateMachineDef;
+use std::hash::Hash;
+use linked_hash_map::LinkedHashMap;
 
 mod parser;
 
@@ -91,7 +93,7 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
                         to.input_value.to_string()
                     )
                 })
-                .into_group_map()
+                .into_linked_group_map()
                 .into_iter()
                 .for_each(|((output, final_state), input_values)| {
                     if let Some(o) = output {
@@ -163,3 +165,28 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
 
     (name, dot)
 }
+
+// based on https://github.com/rust-itertools/itertools/blob/master/src/group_map.rs
+pub fn into_linked_group_map<I, K, V>(iter: I) -> LinkedHashMap<K, Vec<V>>
+    where I: Iterator<Item=(K, V)>,
+          K: Hash + Eq,
+{
+    let mut lookup = LinkedHashMap::new();
+
+    for (key, val) in iter {
+        lookup.entry(key).or_insert(Vec::new()).push(val);
+    }
+
+    lookup
+}
+
+pub trait ILGM : Iterator {
+    fn into_linked_group_map<K, V>(self) -> LinkedHashMap<K, Vec<V>>
+        where Self: Iterator<Item=(K, V)> + Sized,
+              K: Hash + Eq,
+    {
+        into_linked_group_map(self)
+    }
+}
+
+impl<T: ?Sized> ILGM for T where T: Iterator { }
