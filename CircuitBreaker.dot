@@ -3,6 +3,17 @@ digraph "graph" {
   newrank=true;
   SM_init [label="", shape=point];
   SM_init -> "Closed";
+
+  subgraph "cluster_legend" {
+    label="Legend";
+    __init [ shape=point ];
+    __init -> __init2;
+    __init2 [ shape=none label="Initial transition" ];
+    __state [ label="state" ];
+    __input [ label="input" color="#008000" shape=cds ];
+    __output [ label="output" color=red shape=note ];
+  }
+
   "SetupTimer_Open_Unsuccessful_iv" -> "Closed" [ arrowhead=none arrowtail=normal style=dashed dir=both ];
   "Open" -> "Open_HalfOpen_iv" [ style=dashed rankdir=TB ];
   "Open_HalfOpen_iv" [label="TimerTriggered" color="#008000" shape=cds ];

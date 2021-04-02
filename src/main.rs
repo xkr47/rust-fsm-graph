@@ -55,14 +55,27 @@ fn read_fsms(file: &str) -> Vec<StateMachineDef> {
 fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
     let name = fsm.name.to_string();
 
+    let green = "\"#008000\"";
+
     let mut dot = format!(r#"digraph "graph" {{
   rankdir="LR";
   newrank=true;
   SM_init [label="", shape=point];
   SM_init -> "{}";
-"#, fsm.initial_state.to_string());
 
-    let green = "\"#008000\"";
+  subgraph "cluster_legend" {{
+    label="Legend";
+    __init [ shape=point ];
+    __init -> __init2;
+    __init2 [ shape=none label="Initial transition" ];
+    __state [ label="state" ];
+    __input [ label="input" color={} shape=cds ];
+    __output [ label="output" color=red shape=note ];
+  }}
+
+"#,
+                          fsm.initial_state.to_string(),
+                          green);
 
     let mut dot2 = LinkedHashSet::new();
     fsm.transitions.into_iter()
