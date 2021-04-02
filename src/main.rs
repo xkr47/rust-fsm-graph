@@ -83,7 +83,14 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
     let mut seen_states = HashSet::new();
     let mut dot2 = Vec::new();
     let mut seen_edges = LinkedHashSet::new();
-    let line_styles = ["dashed", "dotted", "solid", "bold"].iter().map(|style| format!("style={}", style)).collect::<Vec<_>>();
+    let line_styles = [
+        "style=solid",
+        "style=dashed",
+        "style=dotted",
+        "style=solid penwidth=2.0", // same as "style=bold"
+        "style=dashed penwidth=2.0",
+        "style=dotted penwidth=2.0",
+    ];
     let mut line_styles = line_styles.iter().cycle();
     fsm.transitions.into_iter()
         .for_each(|from| {
