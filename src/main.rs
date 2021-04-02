@@ -58,7 +58,7 @@ fn read_fsms(file: &str) -> Vec<StateMachineDef> {
 fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
     let name = fsm.name.to_string();
 
-    let green = "\"#008000\"";
+    let green = "\"#00c000\"";
 
     let mut dot = format!(r#"digraph "graph" {{
   rankdir="LR";
@@ -83,6 +83,8 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
     let mut seen_states = HashSet::new();
     let mut dot2 = Vec::new();
     let mut seen_edges = LinkedHashSet::new();
+    let line_styles = ["dashed", "dotted", "solid", "bold"].iter().map(|style| format!("style={}", style)).collect::<Vec<_>>();
+    let mut line_styles = line_styles.iter().cycle();
     fsm.transitions.into_iter()
         .for_each(|from| {
             let from_state = from.initial_state.to_string();
@@ -103,13 +105,14 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
                 .for_each(|((output, final_state), input_values)| {
                     eprintln!("  to {} output {:?} for inputs {:?}", final_state, output, input_values);
                     let reverse = from_state != final_state && seen_states.contains(&final_state);
+                    let line_style = line_styles.next().unwrap();
                     if let Some(o) = output {
                         let output_node = format!("{}_{}", o, final_state);
                         let iv_node = format!("{}_{}_{}_iv", o, final_state, input_values.join("_"));
 
                         // reason I use arrowhead, arrowtail here + reversed order of nodes is so that they rank frim right-to-left instead of left-to-right
 
-                        insert_edge(&mut dot2, &mut seen_edges, reverse, &from_state, &iv_node, "style=dashed");
+                        insert_edge(&mut dot2, &mut seen_edges, reverse, &from_state, &iv_node, line_style);
 
 
                         if from_state == final_state {
@@ -121,14 +124,14 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
                                           input_values.join(",\n"),
                                           green));
 
-                        insert_edge(&mut dot2, &mut seen_edges, reverse,iv_node, &output_node, format!("color={}", green));
+                        insert_edge(&mut dot2, &mut seen_edges, reverse,iv_node, &output_node, format!("{} color={}", line_style, green));
 
 
                         dot2.push(format!("  \"{}\" [label=\"{}\" color=red shape=note ];\n",
                                           output_node,
                                           o));
 
-                        insert_edge(&mut dot2, &mut seen_edges, reverse,output_node, final_state, "color=red");
+                        insert_edge(&mut dot2, &mut seen_edges, reverse,output_node, final_state, format!("{} color=red", line_style));
 
                     } else {
                         let iv_node = format!("{}_{}_iv", final_state, input_values.join("_"));
@@ -137,7 +140,7 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
                             dot2.push(format!("  {{ rank=same; \"{}\"; \"{}\"; }}\n", from_state, iv_node));
                         }
 
-                        insert_edge(&mut dot2, &mut seen_edges, reverse,&from_state, &iv_node, "style=dashed");
+                        insert_edge(&mut dot2, &mut seen_edges, reverse,&from_state, &iv_node, line_style);
 
 
                         dot2.push(format!("  \"{}\" [label=\"{}\" color={} shape=cds ];\n",
@@ -145,7 +148,7 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
                                           input_values.iter().join(",\n"),
                                           green));
 
-                        insert_edge(&mut dot2, &mut seen_edges, reverse, iv_node, final_state, format!("color={}", green));
+                        insert_edge(&mut dot2, &mut seen_edges, reverse, iv_node, final_state, format!("{} color={}", line_style, green));
                     }
                 });
         });

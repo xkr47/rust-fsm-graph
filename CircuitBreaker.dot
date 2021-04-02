@@ -10,22 +10,22 @@ digraph "graph" {
     __init -> __init2;
     __init2 [ shape=none label="Initial transition" ];
     __state [ label="state" ];
-    __input [ label="input" color="#008000" shape=cds ];
+    __input [ label="input" color="#00c000" shape=cds ];
     __output [ label="output" color=red shape=note ];
   }
 
   "Closed" -> "SetupTimer_Open_Unsuccessful_iv" [ style=dashed ];
-  "SetupTimer_Open_Unsuccessful_iv" [label="Unsuccessful" color="#008000" shape=cds ];
-  "SetupTimer_Open_Unsuccessful_iv" -> "SetupTimer_Open" [ color="#008000" ];
+  "SetupTimer_Open_Unsuccessful_iv" [label="Unsuccessful" color="#00c000" shape=cds ];
+  "SetupTimer_Open_Unsuccessful_iv" -> "SetupTimer_Open" [ style=dashed color="#00c000" ];
   "SetupTimer_Open" [label="SetupTimer" color=red shape=note ];
-  "SetupTimer_Open" -> "Open" [ color=red ];
-  "Open" -> "Open_HalfOpen_iv" [ style=dashed ];
-  "Open_HalfOpen_iv" [label="TimerTriggered" color="#008000" shape=cds ];
-  "Open_HalfOpen_iv" -> "HalfOpen" [ color="#008000" ];
-  "HalfOpen_Closed_iv" -> "HalfOpen" [ arrowhead=none arrowtail=normal dir=both style=dashed ];
-  "HalfOpen_Closed_iv" [label="Successful" color="#008000" shape=cds ];
-  "Closed" -> "HalfOpen_Closed_iv" [ arrowhead=none arrowtail=normal dir=both color="#008000" ];
-  "SetupTimer_Open_Unsuccessful_iv" -> "HalfOpen" [ arrowhead=none arrowtail=normal dir=both style=dashed ];
-  "SetupTimer_Open_Unsuccessful_iv" [label="Unsuccessful" color="#008000" shape=cds ];
+  "SetupTimer_Open" -> "Open" [ style=dashed color=red ];
+  "Open" -> "HalfOpen_TimerTriggered_iv" [ style=dotted ];
+  "HalfOpen_TimerTriggered_iv" [label="TimerTriggered" color="#00c000" shape=cds ];
+  "HalfOpen_TimerTriggered_iv" -> "HalfOpen" [ style=dotted color="#00c000" ];
+  "Closed_Successful_iv" -> "HalfOpen" [ arrowhead=none arrowtail=normal dir=both style=solid ];
+  "Closed_Successful_iv" [label="Successful" color="#00c000" shape=cds ];
+  "Closed" -> "Closed_Successful_iv" [ arrowhead=none arrowtail=normal dir=both style=solid color="#00c000" ];
+  "SetupTimer_Open_Unsuccessful_iv" -> "HalfOpen" [ arrowhead=none arrowtail=normal dir=both style=bold ];
+  "SetupTimer_Open_Unsuccessful_iv" [label="Unsuccessful" color="#00c000" shape=cds ];
   "SetupTimer_Open" [label="SetupTimer" color=red shape=note ];
 }
