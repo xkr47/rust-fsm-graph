@@ -131,7 +131,7 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
                         insert_edge(&mut dot2, &mut seen_edges, reverse,output_node, final_state, "color=red");
 
                     } else {
-                        let iv_node = format!("{}_{}_iv", from_state, final_state);
+                        let iv_node = format!("{}_{}_iv", final_state, input_values.join("_"));
 
                         if from_state == final_state {
                             dot2.push(format!("  {{ rank=same; \"{}\"; \"{}\"; }}\n", from_state, iv_node));
