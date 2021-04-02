@@ -57,12 +57,12 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
 
     let mut dot = format!(r#"digraph "graph" {{
   rankdir="LR";
-  node [shape=Mrecord];
   newrank=true;
   SM_init [label="", shape=point];
   SM_init -> "{}";
 "#, fsm.initial_state.to_string());
 
+    let green = "\"#008000\"";
 
     let mut dot2 = LinkedHashSet::new();
     fsm.transitions.into_iter()
@@ -82,26 +82,64 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
                 .into_iter()
                 .for_each(|((output, final_state), input_values)| {
                     if let Some(o) = output {
-                        let output_node = format!("{}_{}", o, final_state);
+                        // with "action"
 
-                        dot2.insert(format!("  \"{}\" -> \"{}\" [label=\"{}\"  arrowhead=none arrowtail=normal dir=both ];\n",
+                        let output_node = format!("{}_{}", o, final_state);
+                        let iv_node = format!("{}_{}_{}_iv", o, final_state, input_values.join("_"));
+
+                        // reason I use arrowhead, arrowtail here + reversed order of nodes is so that they rank frim right-to-left instead of left-to-right
+
+                        dot2.insert(format!("  \"{}\" -> \"{}\" [ arrowhead=none arrowtail=normal style=dashed dir=both ];\n",
+                                            iv_node,
+                                            from_state));
+
+
+                        if from_state == final_state {
+                            dot2.insert(format!("  {{ rank=same; \"{}\"; \"{}\"; }}\n", from_state, iv_node));
+                        }
+
+                        dot2.insert(format!("  \"{}\" [label=\"{}\" color={} shape=cds ];\n",
+                                            iv_node,
+                                            input_values.join(",\n"),
+                                            green));
+
+                        dot2.insert(format!("  \"{}\" -> \"{}\" [ color={} arrowhead=none arrowtail=normal dir=both ];\n",
                                             output_node,
-                                            from_state,
-                                            input_values.into_iter().join(",\n")));
+                                            iv_node,
+                                            green));
+
 
                         dot2.insert(format!("  \"{}\" [label=\"{}\" color=red shape=note ];\n",
                                             output_node,
                                             o));
+
                         dot2.insert(format!("  \"{}\" -> \"{}\" [ color=red arrowhead=none arrowtail=normal dir=both ];\n",
                                             final_state,
                                             output_node,
                         ));
                     } else {
-                        dot2.insert(format!("  \"{}\" -> \"{}\" [label=\"{}\" ];\n",
-                                            from_state,
-                                            final_state,
-                                            input_values.into_iter().join(",\n")));
+                        // without "action"
 
+                        let iv_node = format!("{}_{}_iv", from_state, final_state);
+
+                        if from_state == final_state {
+                            dot2.insert(format!("  {{ rank=same; \"{}\"; \"{}\"; }}\n", from_state, iv_node));
+                        }
+
+                        dot2.insert(format!("  \"{}\" -> \"{}\" [ style=dashed rankdir=TB ];\n",
+                                            from_state, iv_node
+                                            ));
+
+
+                        dot2.insert(format!("  \"{}\" [label=\"{}\" color={} shape=cds ];\n",
+                                            iv_node,
+                                            input_values.iter().join(",\n"),
+                                            green));
+
+                        dot2.insert(format!("  \"{}\" -> \"{}\" [ color={} ];\n",
+                                            iv_node,
+                                            final_state,
+                                            green));
                     }
                 });
         });

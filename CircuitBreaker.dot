@@ -1,13 +1,18 @@
 digraph "graph" {
   rankdir="LR";
-  node [shape=Mrecord];
   newrank=true;
   SM_init [label="", shape=point];
   SM_init -> "Closed";
-  "SetupTimer_Open" -> "Closed" [label="Unsuccessful"  arrowhead=none arrowtail=normal dir=both ];
-  "Open" -> "HalfOpen" [label="TimerTriggered" ];
-  "HalfOpen" -> "Closed" [label="Successful" ];
-  "SetupTimer_Open" -> "HalfOpen" [label="Unsuccessful"  arrowhead=none arrowtail=normal dir=both ];
+  "SetupTimer_Open_Unsuccessful_iv" -> "Closed" [ arrowhead=none arrowtail=normal style=dashed dir=both ];
+  "Open" -> "Open_HalfOpen_iv" [ style=dashed rankdir=TB ];
+  "Open_HalfOpen_iv" [label="TimerTriggered" color="#008000" shape=cds ];
+  "Open_HalfOpen_iv" -> "HalfOpen" [ color="#008000" ];
+  "SetupTimer_Open_Unsuccessful_iv" -> "HalfOpen" [ arrowhead=none arrowtail=normal style=dashed dir=both ];
+  "SetupTimer_Open_Unsuccessful_iv" [label="Unsuccessful" color="#008000" shape=cds ];
+  "SetupTimer_Open" -> "SetupTimer_Open_Unsuccessful_iv" [ color="#008000" arrowhead=none arrowtail=normal dir=both ];
   "SetupTimer_Open" [label="SetupTimer" color=red shape=note ];
   "Open" -> "SetupTimer_Open" [ color=red arrowhead=none arrowtail=normal dir=both ];
+  "HalfOpen" -> "HalfOpen_Closed_iv" [ style=dashed rankdir=TB ];
+  "HalfOpen_Closed_iv" [label="Successful" color="#008000" shape=cds ];
+  "HalfOpen_Closed_iv" -> "Closed" [ color="#008000" ];
 }
