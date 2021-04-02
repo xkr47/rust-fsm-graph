@@ -104,8 +104,6 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
                     eprintln!("  to {} output {:?} for inputs {:?}", final_state, output, input_values);
                     let reverse = from_state != final_state && seen_states.contains(&final_state);
                     if let Some(o) = output {
-                        // with "action"
-
                         let output_node = format!("{}_{}", o, final_state);
                         let iv_node = format!("{}_{}_{}_iv", o, final_state, input_values.join("_"));
 
@@ -133,8 +131,6 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
                         insert_edge(&mut dot2, &mut seen_edges, reverse,output_node, final_state, "color=red");
 
                     } else {
-                        // without "action"
-
                         let iv_node = format!("{}_{}_iv", from_state, final_state);
 
                         if from_state == final_state {
