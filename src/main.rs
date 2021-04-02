@@ -9,6 +9,7 @@ use syn::{Item, parse2};
 use crate::parser::StateMachineDef;
 use std::hash::Hash;
 use linked_hash_map::LinkedHashMap;
+use std::collections::HashSet;
 
 mod parser;
 
@@ -79,10 +80,14 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
                           fsm.initial_state.to_string(),
                           green);
 
-    let mut dot2 = LinkedHashSet::new();
+    let mut seen_states = HashSet::new();
+    let mut dot2 = Vec::new();
+    let mut seen_edges = LinkedHashSet::new();
     fsm.transitions.into_iter()
         .for_each(|from| {
             let from_state = from.initial_state.to_string();
+            eprintln!("from {}", from_state);
+            seen_states.insert(from_state.clone());
             from.transitions.into_iter()
                 .map(|to| {
                     (
@@ -96,6 +101,8 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
                 .into_linked_group_map()
                 .into_iter()
                 .for_each(|((output, final_state), input_values)| {
+                    eprintln!("  to {} output {:?} for inputs {:?}", final_state, output, input_values);
+                    let reverse = from_state != final_state && seen_states.contains(&final_state);
                     if let Some(o) = output {
                         // with "action"
 
@@ -104,57 +111,45 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
 
                         // reason I use arrowhead, arrowtail here + reversed order of nodes is so that they rank frim right-to-left instead of left-to-right
 
-                        dot2.insert(format!("  \"{}\" -> \"{}\" [ arrowhead=none arrowtail=normal style=dashed dir=both ];\n",
-                                            iv_node,
-                                            from_state));
+                        insert_edge(&mut dot2, &mut seen_edges, reverse, &from_state, &iv_node, "style=dashed");
 
 
                         if from_state == final_state {
-                            dot2.insert(format!("  {{ rank=same; \"{}\"; \"{}\"; }}\n", from_state, iv_node));
+                            dot2.push(format!("  {{ rank=same; \"{}\"; \"{}\"; }}\n", from_state, iv_node));
                         }
 
-                        dot2.insert(format!("  \"{}\" [label=\"{}\" color={} shape=cds ];\n",
-                                            iv_node,
-                                            input_values.join(",\n"),
-                                            green));
+                        dot2.push(format!("  \"{}\" [label=\"{}\" color={} shape=cds ];\n",
+                                          iv_node,
+                                          input_values.join(",\n"),
+                                          green));
 
-                        dot2.insert(format!("  \"{}\" -> \"{}\" [ color={} arrowhead=none arrowtail=normal dir=both ];\n",
-                                            output_node,
-                                            iv_node,
-                                            green));
+                        insert_edge(&mut dot2, &mut seen_edges, reverse,iv_node, &output_node, format!("color={}", green));
 
 
-                        dot2.insert(format!("  \"{}\" [label=\"{}\" color=red shape=note ];\n",
-                                            output_node,
-                                            o));
+                        dot2.push(format!("  \"{}\" [label=\"{}\" color=red shape=note ];\n",
+                                          output_node,
+                                          o));
 
-                        dot2.insert(format!("  \"{}\" -> \"{}\" [ color=red arrowhead=none arrowtail=normal dir=both ];\n",
-                                            final_state,
-                                            output_node,
-                        ));
+                        insert_edge(&mut dot2, &mut seen_edges, reverse,output_node, final_state, "color=red");
+
                     } else {
                         // without "action"
 
                         let iv_node = format!("{}_{}_iv", from_state, final_state);
 
                         if from_state == final_state {
-                            dot2.insert(format!("  {{ rank=same; \"{}\"; \"{}\"; }}\n", from_state, iv_node));
+                            dot2.push(format!("  {{ rank=same; \"{}\"; \"{}\"; }}\n", from_state, iv_node));
                         }
 
-                        dot2.insert(format!("  \"{}\" -> \"{}\" [ style=dashed rankdir=TB ];\n",
-                                            from_state, iv_node
-                                            ));
+                        insert_edge(&mut dot2, &mut seen_edges, reverse,&from_state, &iv_node, "style=dashed");
 
 
-                        dot2.insert(format!("  \"{}\" [label=\"{}\" color={} shape=cds ];\n",
-                                            iv_node,
-                                            input_values.iter().join(",\n"),
-                                            green));
+                        dot2.push(format!("  \"{}\" [label=\"{}\" color={} shape=cds ];\n",
+                                          iv_node,
+                                          input_values.iter().join(",\n"),
+                                          green));
 
-                        dot2.insert(format!("  \"{}\" -> \"{}\" [ color={} ];\n",
-                                            iv_node,
-                                            final_state,
-                                            green));
+                        insert_edge(&mut dot2, &mut seen_edges, reverse, iv_node, final_state, format!("color={}", green));
                     }
                 });
         });
@@ -164,6 +159,24 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
     dot.push_str("}\n");
 
     (name, dot)
+}
+
+fn insert_edge<F: AsRef<str>, T: AsRef<str>, S: AsRef<str>>(dot2: &mut Vec<String>, seen_edges: &mut LinkedHashSet<(String, String)>, reverse: bool, from: F, to: T, styles: S) {
+    eprintln!("    {} - {} {}", from.as_ref(), to.as_ref(), if reverse { "rev" } else { "" });
+    if !seen_edges.insert((from.as_ref().to_string(), to.as_ref().to_string())) {
+        return;
+    }
+    if reverse {
+        dot2.push(format!("  \"{}\" -> \"{}\" [ arrowhead=none arrowtail=normal dir=both {} ];\n",
+                          to.as_ref(),
+                          from.as_ref(),
+                          styles.as_ref()));
+    } else {
+        dot2.push(format!("  \"{}\" -> \"{}\" [ {} ];\n",
+                          from.as_ref(),
+                          to.as_ref(),
+                          styles.as_ref()));
+    }
 }
 
 // based on https://github.com/rust-itertools/itertools/blob/master/src/group_map.rs
