@@ -21,3 +21,7 @@ $ dot -Tpng CircuitBreaker.dot > CircuitBreaker.png
 .. which generates the following image:
 
 ![CircuitBreaker.png]
+
+# Ideas
+
+- allow hiding edges with same start & end
