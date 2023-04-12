@@ -5,7 +5,7 @@ authors = ["Jonas Berlin <xkr47@outerspace.dyndns.org>"]
 edition = "2021"
 
 [dependencies]
-itertools = "0.9"
+itertools = "0.10"
 linked_hash_set = "0.1"
 linked-hash-map = "0.5"
 
