@@ -74,6 +74,7 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
     __state [ label="state" ];
     __input [ label="input" color={} shape=cds ];
     __output [ label="output" color=red shape=note ];
+    __dummy [ shape=none label="Line styles\nhave no special\n meaning, they\njust help tracing" ];
   }}
 
 "#,
