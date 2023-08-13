@@ -10,7 +10,7 @@ $ cargo run example.rs
 Wrote CircuitBreaker.dot
 ```
 
-This produces a [graphviz](https://graphviz.org/) .dot file which can be rendered to images in a plethora of formats - png, svg, ps, pdf etc. In this example, it produces a [CircuitBreaker.dot] file.
+This produces a [graphviz](https://graphviz.org/) .dot file which can be rendered to images in a plethora of formats - png, svg, ps, pdf etc. In this example, it produces a [CircuitBreaker.dot](CircuitBreaker.dot) file.
 
 Then run the `dot` command from the graphviz package:
 
@@ -21,6 +21,8 @@ $ dot -Tpng CircuitBreaker.dot > CircuitBreaker.png
 .. which generates the following image:
 
 ![statemachine diagram](CircuitBreaker.png)
+
+N.B. The different line styles do not indicate anything. They just aid the reader to visually track different lines along state graphs, especially bigger ones.
 
 # Ideas
 
