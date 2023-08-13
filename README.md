@@ -10,7 +10,7 @@ $ cargo run example.rs
 Wrote CircuitBreaker.dot
 ```
 
-This produces a [graphviz](https://graphviz.org/) .dot file which can be rendered to images in a plethora of formats - png, svg, ps, pdf etc. In this example, it produces a [CircuitBreaker.dot](CircuitBreaker.dot) file.
+This produces a [graphviz](https://graphviz.org/) .dot file which can be rendered to images in a plethora of formats - png, svg, ps, pdf etc. In this example, it produces a [CircuitBreaker.dot](CircuitBreaker.dot) file. The file is named is based on the name of the state machine in the source code.
 
 Then run the `dot` command from the graphviz package:
 
