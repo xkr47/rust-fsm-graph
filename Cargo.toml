@@ -10,5 +10,5 @@ linked_hash_set = "0.1"
 linked-hash-map = "0.5"
 
 [dependencies.syn]
-version = "1.0"
+version = "1"
 features = [ "full", "parsing" ]
