@@ -40,14 +40,10 @@ fn read_fsms(file: &str) -> Vec<StateMachineDef> {
     syn::parse_file(&read_to_string(file).expect("failed to read file"))
         .expect("Unable to parse file")
         .items.into_iter()
-        .filter_map(|item|
-            if let Item::Macro(item_macro) = item {
-                let seg = &item_macro.mac.path.segments;
-                if seg.len() == 1 && seg.first().unwrap().ident == "state_machine" {
-                    Some(item_macro.mac.tokens)
-                } else {
-                    None
-                }
+        .filter_map(|item| if let Item::Macro(item_macro) = item { Some(item_macro.mac) } else { None })
+        .filter_map(|mac|
+            if mac.path.segments.last().unwrap().ident == "state_machine" {
+                Some(mac.tokens)
             } else {
                 None
             })
