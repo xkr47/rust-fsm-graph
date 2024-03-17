@@ -74,7 +74,7 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
   }}
 
 "#,
-                          fsm.initial_state.to_string(),
+                          fsm.initial_state,
                           green);
 
     let mut seen_states = HashSet::new();
@@ -98,7 +98,7 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
                 .map(|to| {
                     (
                         (
-                            if let Some(i) = &to.output { Some(i.to_string()) } else { None },
+                            to.output.as_ref().map(|i| i.to_string()),
                             to.final_state.to_string()
                         ),
                         to.input_value.to_string()
@@ -157,7 +157,7 @@ fn fsm_to_graphviz(fsm: StateMachineDef) -> (String, String) {
                 });
         });
 
-    dot2.iter().for_each(|line| dot.push_str(&line));
+    dot2.iter().for_each(|line| dot.push_str(line));
 
     dot.push_str("}\n");
 
